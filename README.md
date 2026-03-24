@@ -17,7 +17,7 @@ Internal tools used by staff and operators. All deployed on **Vercel**.
 | `7s-marketing` | Marketing operations — flyers, campaigns, digests, and outbound communications | Vercel |
 | `7s-membership` | Membership operations — member records, cards, visits, standing, and coordinator tools | Vercel |
 | `7s-landing` | Platform shell, launcher, and home for the canonical Supabase project (migrations, edge functions, seeds) | Vercel |
-| `7s-cafe-retail` | Café and retail point-of-sale operations | Vercel / Cloudflare |
+| `7s-cafe-retail` | Café and retail point-of-sale operations | Vercel |
 
 ### Member-Facing Apps
 
