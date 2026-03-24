@@ -107,7 +107,7 @@ Not a deployable app. This is the platform workspace that ties everything togeth
 
 ┌─────────────────────────────────────────────────────────┐
 │  External Services                                      │
-│  Stripe · Google Places API · OpenTable                 │
+│  Stripe · Google Places API · OpenTable · Resend        │
 └─────────────────────────────────────────────────────────┘
 ```
 
