@@ -48,7 +48,7 @@ The `7s-client-apps` monorepo also contains shared internal packages: `packages/
 
 | Repo | Purpose | Status |
 | --- | --- | --- |
-| `7s-bgcom` | Backgammon community platform | TBD |
+| `7s-bgcom` | Backgammon.com retail integration | TBD |
 | `7s-business` | Business planning and events frontend | Planned (Vercel) |
 
 ### This Repo (`7s-app-of-apps`)
