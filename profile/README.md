@@ -1,7 +1,3 @@
-# 7 Spring — App-of-Apps
-
-Coordination workspace for the 7 Spring application suite. This repo does not contain the product code for every app — it owns the shared packages, local test harness, cross-repo documentation, and orchestration scripts that keep the platform moving in a consistent direction.
-
 ## Repo Map
 
 The 7 Spring platform is organized into **channel apps** (frontends that users interact with), **domain services** (backends that own business logic and data), and **shared infrastructure** (packages, migrations, and tooling in this repo).
