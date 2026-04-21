@@ -1,228 +1,83 @@
-## Repo Map
+# 7 Spring Engineering
 
-The 7 Spring platform is organized into **channel apps** (frontends that users interact with), **domain services** (backends that own business logic and data), and **shared infrastructure** (packages, migrations, and tooling in this repo).
+This organization holds the private software systems for 7 Spring and related retail properties.
 
-### Employee Web Apps
+The platform has been migrated into a structured monorepo. New 7 Spring product work should start in `7s-workspace` unless it clearly belongs to one of the independent retail web properties listed below.
 
-Internal tools used by staff and operators. All deployed on **Vercel**.
+## Current Repositories
 
-| Repo | Purpose | Hosting |
+| Repository | Role | What belongs here |
 | --- | --- | --- |
-| `7s-inventory` | Inventory management — items, counts, purchasing, vendors, and financial operations | Vercel |
-| `7s-host-terminal` | Host desk — door events, greeting, coat check, table management, and reservations | Vercel |
-| `7s-marketing` | Marketing operations — flyers, campaigns, digests, and outbound communications | Vercel |
-| `7s-membership` | Membership operations — member records, cards, visits, standing, and coordinator tools | Vercel |
-| `7s-landing` | Platform shell, launcher, and home for the canonical Supabase project (migrations, edge functions, seeds) | Vercel |
-| `7s-cafe-retail` | Café and retail point-of-sale operations | Vercel |
+| [`7s-workspace`](https://github.com/7-Spring/7s-workspace) | Canonical 7 Spring platform monorepo | Member apps, operations apps, backend services, shared packages, contracts, local Supabase infrastructure, seeds, and platform docs |
+| [`shop-backgammon`](https://github.com/7-Spring/shop-backgammon) | Backgammon.com retail storefront | Luxury ecommerce storefront built with Next.js and Shopify Storefront API integration |
+| [`7s-cafe-retail`](https://github.com/7-Spring/7s-cafe-retail) | 7 Spring cafe and retail web surface | Public cafe/retail web experience, menu/shop/play pages, SEO, and related static assets |
 
-### Member-Facing Apps
+## Platform Monorepo
 
-Apps used by members (clients). Housed in a single monorepo.
+`7s-workspace` is the source of truth for the 7 Spring product platform. It is a pnpm + Turbo monorepo with explicit service boundaries.
 
-| Repo | App | Purpose | Hosting |
-| --- | --- | --- | --- |
-| `7s-client-apps` | `apps/web` | Member web portal — profile, events, concierge, LFG, backgammon | Vercel |
-| `7s-client-apps` | `apps/mobile` | Member mobile app (Expo / React Native) | App Store |
-
-The `7s-client-apps` monorepo also contains shared internal packages: `packages/contracts` (generated API contracts), `packages/ui` (shared component library), and `packages/backgammon-engine`.
-
-### Employee Mobile App
-
-| Repo | Purpose | Hosting |
+| Area | Location | Purpose |
 | --- | --- | --- |
-| `7s-mobile` | Internal mobile app for inventory and host workflows (Expo / React Native) | App Store (internal distribution) |
+| Member web | `apps/client-web` | Customer-facing web application |
+| Member mobile | `apps/client-mobile` | Customer-facing mobile app |
+| Ops web | `apps/ops-web` | Internal operations web application |
+| Ops mobile | `apps/ops-mobile` | Internal operations mobile app |
+| Client backend | `services/client-backend` | Member-facing API and domain logic |
+| Operations backend | `services/operations-backend` | Internal operations API and workflows |
+| Member auth | `services/member-auth` | Privileged member-auth lifecycle service |
+| Shared packages | `packages/*` | UI, contracts, domain helpers, email, links, design tokens, and gameplay engine code |
+| Local platform | `infra/*` | Local Docker, Supabase, migrations, seeding, and dev orchestration |
 
-### Backend Services
+Boundary rules are enforced in the workspace:
 
-| Repo | Purpose | Hosting |
-| --- | --- | --- |
-| `7s-client-backend` | Authoritative member platform backend — memberships, billing, Stripe, host APIs, concierge, LFG, member health, published events/flyers, notifications. Includes a separate worker process for async jobs. | Render |
-| `7s-operations-backend` | Internal operations backend — inventory APIs, purchasing, vendor management, marketing authoring, campaign sends, and internal reporting | Render |
-| `7s-member-auth-admin` | Privileged auth lifecycle service — member enrollment, disenrollment, and login-link generation. Narrow scope by design. | Vercel |
+- Apps do not import from other apps; shared code moves through packages.
+- Services do not import from apps.
+- Packages do not import from apps or services.
+- Member and ops domain code stay separated unless a shared package is intentionally introduced.
 
-### Future / Planned
+## Independent Retail Properties
 
-| Repo | Purpose | Status |
-| --- | --- | --- |
-| `7s-bgcom` | Backgammon.com retail integration | TBD |
-| `7s-business` | Business financial performance and estimation dashboards | Planned (Vercel) |
+`shop-backgammon` and `7s-cafe-retail` are intentionally separate from the 7 Spring platform monorepo. They are brand/retail web properties with different deployment and product lifecycles.
 
-### This Repo (`7s-app-of-apps`)
+Keep them separate unless they start sharing real runtime contracts with the platform. If shared code becomes necessary, prefer a small package or API boundary over moving either property into `7s-workspace`.
 
-Not a deployable app. This is the platform workspace that ties everything together.
+## Cafe Repo Decision
 
-| Directory | Contents |
-| --- | --- |
-| `packages/` | Shared npm packages published under `@eacooke/*` — see [Shared Packages](#shared-packages) below |
-| `docs/` | Architecture docs, runbooks, migration plans, and dev logs |
-| `scripts/` | Dev orchestration scripts, testing harnesses, and CI tooling |
-| `config/` | Shared configuration |
-| `__tests__/` | Cross-repo integration tests |
+Keep `7s-cafe-retail`.
 
-## Deployment Topography
+`7s-cafe-retail-web` appears to be the older duplicate:
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  Vercel                                                 │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐  │
-│  │Inventory │ │Host Term │ │Marketing │ │Membership │  │
-│  └──────────┘ └──────────┘ └──────────┘ └───────────┘  │
-│  ┌──────────┐ ┌──────────┐ ┌───────────────┐           │
-│  │ Landing  │ │Cafe Retail│ │Client Apps Web│           │
-│  └──────────┘ └──────────┘ └───────────────┘           │
-│  ┌──────────────┐                                       │
-│  │Member Auth   │                                       │
-│  │Admin         │                                       │
-│  └──────────────┘                                       │
-└─────────────────────────────────────────────────────────┘
+- Both repos have the same Vite/React app shape and package name.
+- `7s-cafe-retail-web` was last pushed on March 18, 2026.
+- `7s-cafe-retail` includes those March commits plus the later April 14, 2026 SEO work.
+- The local active checkout is `7s-cafe-retail`.
 
-┌─────────────────────────────────────────────────────────┐
-│  Render                                                 │
-│  ┌──────────────────┐  ┌──────────────────────────────┐ │
-│  │ Client Backend   │  │ Operations Backend           │ │
-│  │ + Worker process │  │                              │ │
-│  └──────────────────┘  └──────────────────────────────┘ │
-└─────────────────────────────────────────────────────────┘
+Recommended cleanup:
 
-┌─────────────────────────────────────────────────────────┐
-│  Supabase (single shared project)                       │
-│  Canonical migrations owned by 7s-landing               │
-│  Schema isolation + per-backend database roles          │
-│  Schemas: platform, authz, client, membership,          │
-│           host_terminal, backend, inventory              │
-│  Planned: marketing, published                           │
-└─────────────────────────────────────────────────────────┘
+1. Confirm any deployment still pointing at `7s-cafe-retail-web` has been moved to `7s-cafe-retail`.
+2. Archive `7s-cafe-retail-web`.
+3. Keep all future cafe/retail web work in `7s-cafe-retail`.
 
-┌─────────────────────────────────────────────────────────┐
-│  App Stores                                             │
-│  ┌──────────────────┐  ┌──────────────────┐             │
-│  │ Client Mobile    │  │ Ops Mobile       │             │
-│  │ (7s-client-apps) │  │ (7s-mobile)      │             │
-│  └──────────────────┘  └──────────────────┘             │
-└─────────────────────────────────────────────────────────┘
+## Daily Development
 
-┌─────────────────────────────────────────────────────────┐
-│  External Services                                      │
-│  Stripe · Google Places API · OpenTable · Resend        │
-└─────────────────────────────────────────────────────────┘
-```
+Use the README inside each repository for setup details.
 
-## Architecture Overview
-
-The platform follows a few core principles. For the full specification, see `docs/architecture/platform-target-state-v2.md`.
-
-**Two backends, not ten.** The platform intentionally consolidates into two domain backends rather than one per app. `Client Backend` owns all member-facing truth (memberships, billing, host workflows, and published member-facing projections of events and flyers). `Operations Backend` owns internal operations (inventory, purchasing, marketing authoring). When Operations Backend needs to publish member-facing content, it calls Client Backend APIs — it never writes directly to Client Backend tables. Channel apps stay thin and consume APIs — they don't re-implement domain rules.
-
-**One write owner per domain.** Every database table is assigned to exactly one backend. Cross-domain reads use read-only grants. No cross-schema writes. The full table-to-owner mapping is in `docs/architecture/domain-ownership-matrix.md`.
-
-**Single Supabase project, strict isolation.** Near-term, all data lives in one Supabase project with schema-level and role-level isolation. Each backend connects with its own database role and can only write to its own schemas. A future split into separate public/internal data planes is planned but not yet triggered.
-
-**Canonical migrations live in `7s-landing`.** All Supabase migrations, edge functions, seeds, and project configuration are owned by the `7s-landing` repo. This is the single source of truth for the database schema.
-
-**Channel apps → Backend APIs, not shared database.** Web and mobile frontends consume backend APIs. Direct database access from channel apps is being eliminated where it still exists (notably `7s-mobile`).
-
-## Shared Packages
-
-Published under the `@eacooke` scope via the workspace. Managed with pnpm.
-
-| Package | Description |
-| --- | --- |
-| `@eacooke/email` | Shared email transport and rendering primitives |
-| `@eacooke/operator-auth` | Operator authentication, authorization, and service-to-service credential helpers |
-| `@eacooke/platform-context` | Shared platform context fetchers (entities, app access, profiles) |
-| `@eacooke/platform-tasks` | Task/workflow queue primitives |
-| `@eacooke/backgammon-engine` | Shared backgammon game engine (rules, move generation, state management) |
-
-Build, test, and lint all packages:
+For the platform monorepo:
 
 ```bash
-pnpm packages:build
-pnpm packages:test
-pnpm packages:lint
+pnpm install
+pnpm infra:start
+pnpm bootstrap:env
+pnpm infra:seed
+pnpm dev
 ```
 
-## How Things Connect
-
-```
-Member apps ──→ Client Backend ──→ Supabase (client, membership, host_terminal, backend schemas)
-                     │
-                     ├──→ Stripe (billing)
-                     ├──→ Auth Lifecycle Service (enrollment)
-                     └──→ Worker (async jobs, notifications, health evaluation)
-
-Ops apps ─────→ Operations Backend ──→ Supabase (inventory schema)
-  │                   │
-  │                   ├──→ Client Backend (audience resolution, publish projections)
-  │                   └──→ Email package (campaign sends)
-  │
-  └───── Some ops apps also call Client Backend directly for member/host workflows
-```
-
-## Development
-
-### Prerequisites
-
-- Node.js (LTS)
-- pnpm (`corepack enable && corepack prepare`)
-- Docker (for local Supabase and integration tests)
-- Expo CLI + Xcode (for mobile development)
-- Detox (for mobile E2E testing)
-
-### Common Workflows
-
-Check the local test environment is ready:
+Before committing platform changes:
 
 ```bash
-npm run testenv:check
+pnpm check
 ```
 
-Start the shared local Supabase stack:
+## Legacy Repositories
 
-```bash
-npm run supabase:local -- start --app inventory
-```
-
-Seed the local database:
-
-```bash
-npm run seed:local
-```
-
-Run gate checks (contract validation and CI dry-runs):
-
-```bash
-npm run gate:contract
-npm run gate:pr:dry-run
-npm run gate:main:dry-run
-```
-
-Orchestrate all local services:
-
-```bash
-npm run start-all    # start everything
-npm run status       # check what's running
-npm run stop-all     # tear it down
-npm run start-one    # start a single service
-```
-
-## Key Docs
-
-| Document | Location |
-| --- | --- |
-| Platform Target State V2 | `docs/architecture/platform-target-state-v2.md` |
-| Domain Ownership Matrix | `docs/architecture/domain-ownership-matrix.md` |
-| Repo Classification | `docs/architecture/repo-classification.md` |
-| Schema Governance | `docs/architecture/schema-governance.md` |
-| Dev Startup Guide | `docs/dev-startup.md` |
-| Testing Port Map | `docs/agent-testing-port-map.md` |
-| Supabase Security & RLS | `docs/supabase-security-rls-migration-plan-2026-02-20.md` |
-
-## Transitional & Legacy Repos
-
-These directories exist on disk but are not part of the target-state architecture. See `docs/architecture/repo-classification.md` for full details.
-
-| Directory | Status | Notes |
-| --- | --- | --- |
-| `7s-backend/` | Transitional | Legacy backend being absorbed into `7s-client-backend`. Do not add features. |
-| `7s-client-app/` | Transitional | Original client backend candidate, superseded by `7s-client-backend`. Pending archive. |
-| `7s_OS_Proof_of_Work/` | Non-runtime | Architecture evidence and portfolio documentation. |
+The old split 7 Spring app and service repositories have been absorbed into `7s-workspace`. Treat them as historical references only. Do not start new product work in legacy repos unless an active migration note explicitly says to do so.
